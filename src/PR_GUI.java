@@ -89,6 +89,9 @@ public class PR_GUI extends javax.swing.JFrame {
         resLabel = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         k_input = new javax.swing.JTextField();
+        bootstrap_btn = new javax.swing.JButton();
+        bootstrap_repeats_label = new javax.swing.JTextField();
+        jLabel11 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         l_FLD_winner = new javax.swing.JLabel();
@@ -97,7 +100,7 @@ public class PR_GUI extends javax.swing.JFrame {
         SFSbtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(1000, 0));
+        setMinimumSize(new java.awt.Dimension(1000, 500));
         getContentPane().setLayout(null);
 
         b_read.setText("Read dataset");
@@ -142,11 +145,11 @@ public class PR_GUI extends javax.swing.JFrame {
                         .addGap(28, 28, 28)
                         .addComponent(jLabel3))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(7, 7, 7)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(l_nfeatures, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(77, 77, 77))
+                .addGap(105, 105, 105))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -266,7 +269,7 @@ public class PR_GUI extends javax.swing.JFrame {
         l_NewDim.setBounds(270, 150, 30, 21);
 
         getContentPane().add(jPanel3);
-        jPanel3.setBounds(10, 140, 330, 220);
+        jPanel3.setBounds(10, 170, 330, 220);
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -283,7 +286,7 @@ public class PR_GUI extends javax.swing.JFrame {
         );
 
         getContentPane().add(jPanel1);
-        jPanel1.setBounds(820, 10, 160, 130);
+        jPanel1.setBounds(350, 140, 160, 130);
 
         jPanel4.setBackground(new java.awt.Color(204, 255, 204));
         jPanel4.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -342,8 +345,25 @@ public class PR_GUI extends javax.swing.JFrame {
         jPanel4.add(k_input);
         k_input.setBounds(50, 80, 50, 31);
 
+        bootstrap_btn.setText("bootstrap");
+        bootstrap_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bootstrap_btnActionPerformed(evt);
+            }
+        });
+        jPanel4.add(bootstrap_btn);
+        bootstrap_btn.setBounds(40, 210, 100, 35);
+
+        bootstrap_repeats_label.setText("100");
+        jPanel4.add(bootstrap_repeats_label);
+        bootstrap_repeats_label.setBounds(70, 250, 60, 31);
+
+        jLabel11.setText("Repeats");
+        jPanel4.add(jLabel11);
+        jLabel11.setBounds(10, 250, 54, 21);
+
         getContentPane().add(jPanel4);
-        jPanel4.setBounds(460, 150, 350, 210);
+        jPanel4.setBounds(520, 140, 350, 290);
 
         jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Results"));
         jPanel5.setLayout(null);
@@ -354,7 +374,7 @@ public class PR_GUI extends javax.swing.JFrame {
 
         l_FLD_winner.setText("xxx");
         jPanel5.add(l_FLD_winner);
-        l_FLD_winner.setBounds(90, 30, 370, 21);
+        l_FLD_winner.setBounds(90, 30, 430, 21);
 
         jLabel13.setText("FLD value: ");
         jPanel5.add(jLabel13);
@@ -362,10 +382,10 @@ public class PR_GUI extends javax.swing.JFrame {
 
         l_FLD_val.setText("vvv");
         jPanel5.add(l_FLD_val);
-        l_FLD_val.setBounds(90, 60, 370, 21);
+        l_FLD_val.setBounds(90, 60, 430, 21);
 
         getContentPane().add(jPanel5);
-        jPanel5.setBounds(340, 10, 470, 130);
+        jPanel5.setBounds(340, 10, 530, 130);
 
         SFSbtn.setText("SFS");
         SFSbtn.addActionListener(new java.awt.event.ActionListener() {
@@ -374,7 +394,7 @@ public class PR_GUI extends javax.swing.JFrame {
             }
         });
         getContentPane().add(SFSbtn);
-        SFSbtn.setBounds(350, 320, 90, 35);
+        SFSbtn.setBounds(390, 370, 90, 35);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -444,14 +464,8 @@ public class PR_GUI extends javax.swing.JFrame {
             return; // no reduced feature space have been derived
         }
 
-        double[][] data = new double[fisherWinnersIndexes.size()][F[0].length];
-
-        for (int i = 0; i < fisherWinnersIndexes.size(); ++i) {
-            data[i] = F[i];
-        }
-
         Cl = new Classifier(ClassLabels);
-        Cl.generateTraining_and_Test_Sets(data, tf_TrainSetSize.getText());
+        Cl.generateTraining_and_Test_Sets(getSubF(), tf_TrainSetSize.getText());
     }//GEN-LAST:event_b_TrainActionPerformed
 
     private void selbox_nfeatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selbox_nfeatActionPerformed
@@ -489,6 +503,50 @@ public class PR_GUI extends javax.swing.JFrame {
         resLabel.setText(result + "%");
     }//GEN-LAST:event_jButton4ActionPerformed
 
+    private double[][] getSubF() {
+        double[][] data = new double[fisherWinnersIndexes.size()][F[0].length];
+
+        for (int i = 0; i < fisherWinnersIndexes.size(); ++i) {
+            data[i] = F[fisherWinnersIndexes.get(i)];
+        }
+        
+        return data;
+    }
+
+    private void bootstrap_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bootstrap_btnActionPerformed
+        if (Cl == null) {
+            Cl = new Classifier(ClassLabels);
+        }
+
+        if (fisherWinnersIndexes == null) {
+            return;
+        }
+        
+        System.out.println("------->>>> bootstrap...");
+
+        int reps = Integer.parseInt(bootstrap_repeats_label.getText());
+        int k = Integer.parseInt(k_input.getText());
+
+        double[] res = new double[4];
+        
+        for (int i=0; i<reps; ++i) {
+            double[] tmp = Cl.bootstrap(getSubF(), reps, k);
+            for (int j=0; j<tmp.length; ++j) {
+                res[j] += tmp[j];
+            }
+        }
+        
+        for (int i=0; i<res.length; ++i) {
+            res[i] /= reps;
+        }
+        
+        System.out.println("NN: " + res[0] + "%");
+        System.out.println("NM: " + res[1] + "%");
+        System.out.println("KNN: " + res[2] + "%");
+        System.out.println("KNM: " + res[3] + "%");
+        
+    }//GEN-LAST:event_bootstrap_btnActionPerformed
+
     private int dimenssionFisher;
 
     /**
@@ -507,6 +565,8 @@ public class PR_GUI extends javax.swing.JFrame {
     private javax.swing.JButton b_Train;
     private javax.swing.JButton b_deriveFS;
     private javax.swing.JButton b_read;
+    private javax.swing.JButton bootstrap_btn;
+    private javax.swing.JTextField bootstrap_repeats_label;
     private javax.swing.JComboBox f_combo_PCA_LDA;
     private javax.swing.JComboBox f_combo_criterion;
     private javax.swing.JRadioButton f_rb_extr;
@@ -515,6 +575,7 @@ public class PR_GUI extends javax.swing.JFrame {
     private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;

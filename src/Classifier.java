@@ -3,9 +3,11 @@ import Jama.Matrix;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -301,11 +303,56 @@ class Classifier {
             if (pointLabel == testLabels.get(i)) {
                 correctCount++;
             }
-            
+
             distances.clear();
         }
 
         return correctCount * 100 / TestSet.length;
+    }
+
+    protected double[] bootstrap(double[][] data, int reps, int k) {
+
+        List<Integer> trainIndexes = new ArrayList<Integer>();
+        List<Integer> testIndexes = new ArrayList<Integer>();
+
+        Random rand = new Random();
+
+        for (int i = 0; i < data[0].length; ++i) {
+            int index = rand.nextInt(data[0].length);
+            if (!trainIndexes.contains(index)) {
+                trainIndexes.add(index);
+            }
+            testIndexes.add(i);
+        }
+
+        testIndexes.removeAll(trainIndexes);
+
+        TrainingSet = new double[trainIndexes.size()][data.length];
+        TestSet = new double[testIndexes.size()][data.length];
+        trainLabels.clear();
+        testLabels.clear();
+
+        for (int i = 0; i < trainIndexes.size(); ++i) {
+            for (int j = 0; j < data.length; ++j) {
+                TrainingSet[i][j] = data[j][trainIndexes.get(i)];
+            }
+            trainLabels.add(ClassLabels[trainIndexes.get(i)]);
+        }
+
+        for (int i = 0; i < testIndexes.size(); ++i) {
+            for (int j = 0; j < data.length; ++j) {
+                TestSet[i][j] = data[j][testIndexes.get(i)];
+            }
+            testLabels.add(ClassLabels[trainIndexes.get(i)]);
+        }
+
+        double NN = trainClassifierNN();
+        double NM = trainClassifierNM();
+        double KNN = trainClassifierKNN(k);
+        double KNM = trainClassifierKNM(k);
+
+        double[] res = new double[]{NN, NM, KNN, KNM};
+        return res;
     }
 
     private double euklidesDistance(double[] trainPoint, double[] testPoint) {
