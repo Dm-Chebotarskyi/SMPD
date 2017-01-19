@@ -1,6 +1,7 @@
 
 import Jama.Matrix;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -353,6 +354,67 @@ class Classifier {
 
         double[] res = new double[]{NN, NM, KNN, KNM};
         return res;
+    }
+
+    protected void crossValidation(double[][] data, int parts, int k) {
+        int count = data[0].length / parts;
+
+        double[] res = new double[4];
+        
+        Matrix m = new Matrix(data).transpose();
+        data = m.getArray();
+        
+//        TrainingSet = new double[data[0].length - count][data.length];
+//        TestSet = new double[count][data.length];
+
+        TrainingSet = new double[data.length - count][data[0].length];
+        TestSet = new double[count][data[0].length];
+
+        int startIndex = 0;
+
+        int testIter = 0;
+        int trainIter = 0;
+
+        for (int c = 0; c < parts; ++c) {
+
+            trainLabels.clear();
+            testLabels.clear();
+
+            for (int i = 0; i < data.length; ++i) {
+
+                for (int j = 0; j < data[i].length; ++j) {
+
+                    if (i >= startIndex && i < startIndex + count) {
+                        TestSet[testIter][j] = data[i][j];
+                        testLabels.add(ClassLabels[i]);
+                        if (j == data[i].length - 1)
+                            testIter++;
+                    } else {
+                        TrainingSet[trainIter][j] = data[i][j];
+                        trainLabels.add(ClassLabels[i]);
+                        
+                        if (j == data[i].length - 1)
+                            trainIter++;
+                    }
+
+                }
+            }
+
+            startIndex += count;
+            testIter = 0;
+            trainIter = 0;
+
+            res[0] += trainClassifierNN();
+            res[1] += trainClassifierNM();
+            res[2] += trainClassifierKNN(k);
+            res[3] += trainClassifierKNM(k);
+
+        }
+
+        System.out.println("NN: " + res[0] / count + "%");
+        System.out.println("NM: " + res[1] / count + "%");
+        System.out.println("KNN: " + res[2] / count + "%");
+        System.out.println("KNM: " + res[3] / count + "%");
     }
 
     private double euklidesDistance(double[] trainPoint, double[] testPoint) {

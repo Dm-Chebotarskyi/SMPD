@@ -92,6 +92,9 @@ public class PR_GUI extends javax.swing.JFrame {
         bootstrap_btn = new javax.swing.JButton();
         bootstrap_repeats_label = new javax.swing.JTextField();
         jLabel11 = new javax.swing.JLabel();
+        crossvalidation_btn = new javax.swing.JButton();
+        jLabel18 = new javax.swing.JLabel();
+        parts_input = new javax.swing.JTextField();
         jPanel5 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         l_FLD_winner = new javax.swing.JLabel();
@@ -352,7 +355,7 @@ public class PR_GUI extends javax.swing.JFrame {
             }
         });
         jPanel4.add(bootstrap_btn);
-        bootstrap_btn.setBounds(40, 210, 100, 35);
+        bootstrap_btn.setBounds(10, 210, 130, 35);
 
         bootstrap_repeats_label.setText("100");
         jPanel4.add(bootstrap_repeats_label);
@@ -361,6 +364,23 @@ public class PR_GUI extends javax.swing.JFrame {
         jLabel11.setText("Repeats");
         jPanel4.add(jLabel11);
         jLabel11.setBounds(10, 250, 54, 21);
+
+        crossvalidation_btn.setText("cross-validation");
+        crossvalidation_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                crossvalidation_btnActionPerformed(evt);
+            }
+        });
+        jPanel4.add(crossvalidation_btn);
+        crossvalidation_btn.setBounds(180, 210, 160, 35);
+
+        jLabel18.setText("Parts:");
+        jPanel4.add(jLabel18);
+        jLabel18.setBounds(160, 250, 38, 21);
+
+        parts_input.setText("25");
+        jPanel4.add(parts_input);
+        parts_input.setBounds(230, 250, 30, 30);
 
         getContentPane().add(jPanel4);
         jPanel4.setBounds(520, 140, 350, 290);
@@ -509,7 +529,7 @@ public class PR_GUI extends javax.swing.JFrame {
         for (int i = 0; i < fisherWinnersIndexes.size(); ++i) {
             data[i] = F[fisherWinnersIndexes.get(i)];
         }
-        
+
         return data;
     }
 
@@ -521,31 +541,47 @@ public class PR_GUI extends javax.swing.JFrame {
         if (fisherWinnersIndexes == null) {
             return;
         }
-        
+
         System.out.println("------->>>> bootstrap...");
 
         int reps = Integer.parseInt(bootstrap_repeats_label.getText());
         int k = Integer.parseInt(k_input.getText());
 
         double[] res = new double[4];
-        
-        for (int i=0; i<reps; ++i) {
+
+        for (int i = 0; i < reps; ++i) {
             double[] tmp = Cl.bootstrap(getSubF(), reps, k);
-            for (int j=0; j<tmp.length; ++j) {
+            for (int j = 0; j < tmp.length; ++j) {
                 res[j] += tmp[j];
             }
         }
-        
-        for (int i=0; i<res.length; ++i) {
+
+        for (int i = 0; i < res.length; ++i) {
             res[i] /= reps;
         }
-        
+
         System.out.println("NN: " + res[0] + "%");
         System.out.println("NM: " + res[1] + "%");
         System.out.println("KNN: " + res[2] + "%");
         System.out.println("KNM: " + res[3] + "%");
-        
     }//GEN-LAST:event_bootstrap_btnActionPerformed
+
+    private void crossvalidation_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_crossvalidation_btnActionPerformed
+        if (Cl == null) {
+            Cl = new Classifier(ClassLabels);
+        }
+
+        if (fisherWinnersIndexes == null) {
+            return;
+        }
+
+        System.out.println("------->>>> Cross-Validation...");
+
+        int k = Integer.parseInt(k_input.getText());
+        int parts = Integer.parseInt(parts_input.getText());
+
+        Cl.crossValidation(getSubF(), parts, k);
+    }//GEN-LAST:event_crossvalidation_btnActionPerformed
 
     private int dimenssionFisher;
 
@@ -567,6 +603,7 @@ public class PR_GUI extends javax.swing.JFrame {
     private javax.swing.JButton b_read;
     private javax.swing.JButton bootstrap_btn;
     private javax.swing.JTextField bootstrap_repeats_label;
+    private javax.swing.JButton crossvalidation_btn;
     private javax.swing.JComboBox f_combo_PCA_LDA;
     private javax.swing.JComboBox f_combo_criterion;
     private javax.swing.JRadioButton f_rb_extr;
@@ -582,6 +619,7 @@ public class PR_GUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -604,6 +642,7 @@ public class PR_GUI extends javax.swing.JFrame {
     private javax.swing.JLabel l_dataset_name_l;
     private javax.swing.JLabel l_nfeatures;
     private javax.swing.JComboBox methodComboBox;
+    private javax.swing.JTextField parts_input;
     private javax.swing.ButtonGroup rbg_F;
     private javax.swing.JLabel resLabel;
     private javax.swing.JComboBox selbox_nfeat;
@@ -764,6 +803,9 @@ public class PR_GUI extends javax.swing.JFrame {
         if (d < 1) {
             d = 1;
         }
+        
+        if (F == null)
+            return;
 
         List<Integer> indexes = new ArrayList<Integer>();
         double tmp = 0, FLD = 0;
@@ -786,8 +828,7 @@ public class PR_GUI extends javax.swing.JFrame {
                     } else {
                         tmp = computeFisherLD(f, indexes.size());
                     }
-
-                    System.out.println("SFS" + indexes.size() + " FLD: " + tmp);
+                    
                     if (tmp > FLD) {
                         FLD = tmp;
                         indexes.set(indexes.size() - 1, i);
